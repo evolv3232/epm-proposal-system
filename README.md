@@ -1,35 +1,43 @@
-# EPM Proposal System V1 — Dedicated Service
+# EPM Proposal System — Flat Repository Version
 
-This package is only for the new Render service:
+This version matches the exact GitHub layout already visible in your repository.
 
-https://epm-proposal-system.onrender.com
-
-## Upload to the new GitHub repository
-
-Upload the contents of this ZIP to the root of the new `epm-proposal-system` repository.
-
-Repository structure:
+The repository root should contain:
 
 - package.json
-- src/
-- data/
-- EPM_Admin_Proposal_Generator_V1.html
+- server.js
+- proposals.js
+- pages.js
+- storage.js
+- format.js
+- proposalPage.js
+- EPM_Admin_Proposal_Generator_Flat_V1.html
+- README.md
+
+There is no `src` folder.
+
+## Replace the files in GitHub
+
+Delete or replace the current files with the files from this package.
+
+The important correction is:
+
+```json
+"start": "node server.js"
+```
 
 ## Render settings
 
-- Service type: Web Service
-- Build command: `npm install`
-- Start command: `npm start`
-- Root directory: blank
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Root Directory: blank
 - Branch: main
 
-Add this environment variable:
+Then select:
 
-`PUBLIC_BASE_URL=https://epm-proposal-system.onrender.com`
+Manual Deploy → Clear build cache & deploy
 
-Then deploy.
-
-## Test
+## Verify
 
 Open:
 
@@ -38,21 +46,10 @@ Open:
 
 Both should return `"ok": true`.
 
-## Wix hidden admin page
+## Wix
 
-Paste the contents of:
+Paste the complete contents of:
 
-`EPM_Admin_Proposal_Generator_V1.html`
+`EPM_Admin_Proposal_Generator_Flat_V1.html`
 
-into an HTML embed on your hidden Wix admin page.
-
-When you create a proposal, the admin page returns:
-
-- Copy Link
-- Text Customer
-- Email Customer
-- Open Proposal
-
-## Records
-
-https://epm-proposal-system.onrender.com/proposals-admin
+into the hidden Wix HTML embed.

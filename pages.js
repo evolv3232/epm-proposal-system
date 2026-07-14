@@ -1,42 +1,67 @@
 
 import express from "express";
-import cors from "cors";
-import proposalsRouter from "./routes/proposals.js";
-import pagesRouter from "./routes/pages.js";
+import { readProposals } from "./storage.js";
+import { escapeHtml, money } from "./format.js";
 
-const app = express();
-const PORT = Number(process.env.PORT || 10000);
+const router = express.Router();
 
-app.use(cors());
-app.use(express.json({ limit: "2mb" }));
-app.use(express.urlencoded({ extended: true }));
+router.get("/proposals-admin", (req, res) => {
+  const rows = readProposals().map(proposal => `
+    <tr>
+      <td>${escapeHtml(proposal.proposalNumber)}</td>
+      <td>${escapeHtml(proposal.customer?.name)}</td>
+      <td>${escapeHtml(proposal.propertyAddress)}</td>
+      <td>${money(proposal.total)}</td>
+      <td>${escapeHtml(proposal.status)}</td>
+      <td>
+        <a href="/proposal/${encodeURIComponent(proposal.proposalNumber)}" target="_blank">
+          Open
+        </a>
+      </td>
+    </tr>
+  `).join("");
 
-app.get("/", (req, res) => {
-  res.json({
-    ok: true,
-    name: "EPM Proposal System",
-    version: "1.0.0",
-    endpoints: [
-      "/api/health",
-      "/api/proposals/health",
-      "/api/proposals",
-      "/proposals-admin"
-    ]
-  });
+  res.send(`<!doctype html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EPM Proposal Records</title>
+<style>
+body{font-family:Arial;background:#f4f7f3;padding:20px;color:#061b33}
+.wrap{max-width:1100px;margin:auto;background:white;padding:20px;border-radius:16px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left;font-size:13px}
+th{background:#061b33;color:white}
+a{color:#2f7d20;font-weight:bold}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>EPM Proposal Records</h1>
+<table>
+<thead>
+<tr>
+<th>Proposal</th>
+<th>Customer</th>
+<th>Property</th>
+<th>Total</th>
+<th>Status</th>
+<th>Link</th>
+</tr>
+</thead>
+<tbody>
+${rows || '<tr><td colspan="6">No proposals yet.</td></tr>'}
+</tbody>
+</table>
+</div>
+</body>
+</html>`);
 });
 
-app.get("/api/health", (req, res) => {
-  res.json({ ok: true, version: "1.0.0", proposalsReady: true });
+router.get("/proposal/:proposalNumber", (req, res) => {
+  res.redirect(
+    `/api/proposals/page/${encodeURIComponent(req.params.proposalNumber)}`
+  );
 });
 
-app.use("/api/proposals", proposalsRouter);
-app.use("/", pagesRouter);
-
-app.use((error, req, res, next) => {
-  console.error(error);
-  res.status(500).json({ error: "Unexpected server error." });
-});
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`EPM Proposal System V1 running on port ${PORT}`);
-});
+export default router;
