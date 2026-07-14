@@ -15,22 +15,13 @@ app.get("/", (req, res) => {
   res.json({
     ok: true,
     name: "EPM Proposal System",
-    version: "1.0.1",
-    endpoints: [
-      "/api/health",
-      "/api/proposals/health",
-      "/api/proposals",
-      "/proposals-admin"
-    ]
+    version: "2.0.0",
+    endpoints: ["/api/health","/api/proposals/health","/api/proposals","/proposals-admin"]
   });
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({
-    ok: true,
-    version: "1.0.1",
-    proposalsReady: true
-  });
+  res.json({ ok: true, version: "2.0.0", proposalsReady: true });
 });
 
 app.use("/api/proposals", proposalsRouter);
@@ -38,11 +29,9 @@ app.use("/", pagesRouter);
 
 app.use((error, req, res, next) => {
   console.error(error);
-  res.status(500).json({
-    error: "Unexpected server error."
-  });
+  res.status(500).json({ error: "Unexpected server error." });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`EPM Proposal System V1.0.1 running on port ${PORT}`);
+  console.log(`EPM Proposal System V2 running on port ${PORT}`);
 });

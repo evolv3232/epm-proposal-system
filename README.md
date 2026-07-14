@@ -1,8 +1,30 @@
-# EPM Proposal System — Flat Repository Version
+# EPM Proposal System V2 — Complete Launch Version
 
-This version matches the exact GitHub layout already visible in your repository.
+This version is designed so you can finish setup and focus on getting clients.
 
-The repository root should contain:
+## Included
+
+- One-click EPM service buttons with professional descriptions
+- Live proposal preview and totals
+- Customer proposal link
+- Text and email buttons
+- Service agreement and electronic approval
+- Scheduling status
+- Completed status
+- Zelle/cash payment reporting
+- Admin Mark Paid action
+- Professional digital receipt
+- Searchable proposal records
+- Call, text, and email shortcuts
+- Delete proposal
+- Downloadable JSON backup
+- Persistent-storage support through `DATA_DIR`
+
+## Replace GitHub files
+
+Replace the flat files in your `epm-proposal-system` repository with the contents of this ZIP.
+
+Keep the repository flat:
 
 - package.json
 - server.js
@@ -11,45 +33,50 @@ The repository root should contain:
 - storage.js
 - format.js
 - proposalPage.js
-- EPM_Admin_Proposal_Generator_Flat_V1.html
-- README.md
+- receiptPage.js
+- EPM_Admin_Proposal_Generator_Flat_V2.html
 
-There is no `src` folder.
+## Render
 
-## Replace the files in GitHub
+Build command:
+`npm install`
 
-Delete or replace the current files with the files from this package.
+Start command:
+`npm start`
 
-The important correction is:
+Root directory:
+leave blank
 
-```json
-"start": "node server.js"
-```
+Environment variable:
+`PUBLIC_BASE_URL=https://epm-proposal-system.onrender.com`
 
-## Render settings
+## Permanent storage
 
-- Build Command: `npm install`
-- Start Command: `npm start`
-- Root Directory: blank
-- Branch: main
+Render's default filesystem can reset during deployments.
 
-Then select:
+For dependable records, add a Render persistent disk mounted at:
 
-Manual Deploy → Clear build cache & deploy
+`/var/data`
+
+Then add:
+
+`DATA_DIR=/var/data`
+
+After that, proposals survive redeployments and restarts.
 
 ## Verify
-
-Open:
 
 - https://epm-proposal-system.onrender.com/api/health
 - https://epm-proposal-system.onrender.com/api/proposals/health
 
-Both should return `"ok": true`.
+## Admin records
 
-## Wix
+https://epm-proposal-system.onrender.com/proposals-admin
 
-Paste the complete contents of:
+## Wix hidden page
 
-`EPM_Admin_Proposal_Generator_Flat_V1.html`
+Paste:
+
+`EPM_Admin_Proposal_Generator_Flat_V2.html`
 
 into the hidden Wix HTML embed.

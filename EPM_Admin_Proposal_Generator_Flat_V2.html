@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>EPM Admin Proposal Generator</title>
+<style>
+:root{--navy:#061b33;--green:#2f7d20;--green2:#256818;--border:#d7e4d2;--muted:#64748b;--bg:#f4f7f3}
+*{box-sizing:border-box}body{margin:0;padding:14px;font-family:Arial;background:var(--bg);color:var(--navy)}
+.wrap{max-width:1100px;margin:auto;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden}
+header{padding:22px;background:linear-gradient(135deg,#061b33,#123a63);color:#fff}header h1{margin:0 0 6px}
+main{padding:17px}.panel{padding:16px;border:1px solid var(--border);border-radius:14px;margin-top:13px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.field{margin-bottom:10px}.field label{display:block;font-weight:bold;font-size:12px;margin-bottom:5px}
+input,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font-size:14px}textarea{min-height:86px}
+.service-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.service-btn{padding:12px;border:1px solid #cfe0ca;border-radius:12px;background:#fbfdfb;cursor:pointer;text-align:left}
+.service-btn:hover{border-color:#8ab77e;background:#f2f8ef}.service-btn strong{display:block;margin-bottom:4px}.service-btn span{display:block;color:var(--muted);font-size:12px;line-height:1.35}
+.line{display:grid;grid-template-columns:1fr 2fr 120px 42px;gap:8px;margin-bottom:8px}.line button{background:#fee2e2;color:#991b1b}
+button,a.btn{border:0;border-radius:10px;padding:11px 14px;font-weight:bold;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.primary{background:var(--green);color:white}.secondary{background:#e9eef3;color:var(--navy)}.dark{background:var(--navy);color:white}
+.actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.result{padding:14px;background:#eef7eb;color:#166534;border-radius:11px;margin-top:12px;display:none}.error{padding:14px;background:#fef2f2;color:#b91c1c;border-radius:11px;margin-top:12px;display:none}
+.small{font-size:12px;color:var(--muted);line-height:1.45}.total{font-size:22px;font-weight:bold;text-align:right;margin-top:10px}.status{margin-top:10px;padding:10px;border-radius:10px;background:#f8fafc;color:var(--muted);font-size:12px}
+.preview{margin-top:10px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}.preview table{width:100%;border-collapse:collapse}.preview th,.preview td{padding:10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px}.preview th{background:#f8fafc}.preview .amt{text-align:right}
+@media(max-width:800px){.service-library{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.line{grid-template-columns:1fr}.actions{display:grid}.actions>*{width:100%}}
+@media(max-width:520px){.service-library{grid-template-columns:1fr}}
+</style></head>
+<body><div class="wrap"><header><div style="color:#a7d39f;font-size:12px;font-weight:bold;letter-spacing:.12em">EPM ADMIN</div><h1>Create Customer Proposal</h1><p>Select services, enter prices, and generate a customer-ready proposal link.</p></header>
+<main>
+<section class="panel"><h2>Customer & Property</h2><div class="grid">
+<div class="field"><label>Customer Name *</label><input id="customerName"></div><div class="field"><label>Phone</label><input id="customerPhone" inputmode="tel"></div>
+<div class="field"><label>Email</label><input id="customerEmail" inputmode="email"></div><div class="field"><label>Property Address *</label><input id="propertyAddress"></div>
+<div class="field"><label>Proposal Number</label><input id="proposalNumber" placeholder="Leave blank to auto-generate"></div><div class="field"><label>Prepared Date</label><input id="preparedDate" type="date"></div>
+</div></section>
+<section class="panel"><h2>Quick-Add Services</h2><p class="small">Press any service to add a professional description.</p><div class="service-library" id="serviceLibrary"></div></section>
+<section class="panel"><h2>Selected Services</h2><div id="lines"></div><div class="total">Total: <span id="total">$0.00</span></div><div class="preview"><table><thead><tr><th>Service</th><th>Description</th><th class="amt">Price</th></tr></thead><tbody id="previewBody"></tbody></table></div></section>
+<section class="panel"><h2>Proposal Notes</h2><textarea id="notes">Final scheduling is confirmed after customer approval. Payment is due immediately after service is completed.</textarea>
+<div class="actions"><button class="primary" id="createBtn" onclick="createProposal()">Create & Save Proposal</button><button class="secondary" onclick="resetForm()">New Proposal</button>
+<a class="btn dark" href="https://epm-proposal-system.onrender.com/proposals-admin" target="_blank">Proposal Records</a><button class="secondary" onclick="testBackend()">Test Connection</button></div>
+<div class="status" id="backendStatus">Backend not tested yet.</div><div class="result" id="result"></div><div class="error" id="errorBox"></div></section>
+</main></div>
+<script>
+const API_BASE="https://epm-proposal-system.onrender.com";
+const SERVICE_LIBRARY=[
+{name:"Lawn Care",description:"Mowing, edging, blowing, and bagging/removal of grass clippings."},
+{name:"Lawn Overgrowth Cleanup",description:"Initial overgrowth reduction and cleanup for tall, dense, or neglected grass before recurring maintenance begins."},
+{name:"Vegetation & Brush Cleanup",description:"Removal or reduction of selected tall weeds, vines, brush, woody stems, saplings, fallen branches, or heavy leaf accumulation."},
+{name:"Surface Cleaning",description:"Professional cleaning of selected driveways, sidewalks, walkways, porches, patios, pool decks, garage floors, and other hard surfaces."},
+{name:"House Soft Wash",description:"Low-pressure exterior cleaning of selected brick, siding, stucco, and painted surfaces to remove organic buildup, algae, mildew, dirt, and webs."},
+{name:"Roof Cleaning",description:"Professional roof treatment and cleaning to address black streaks, algae, moss, organic staining, leaves, and debris."},
+{name:"Gutter Cleaning",description:"Removal of leaves, debris, and buildup from accessible gutters and downspouts, including cleanup of removed material."},
+{name:"Exterior Window Cleaning",description:"Exterior cleaning of selected window panes, frames, and accessible exterior glass surfaces."},
+{name:"Fence Washing",description:"Professional washing of selected wood, vinyl, metal, or mixed-material fence sections. Gates are excluded unless specifically listed."},
+{name:"Hedge & Bush Trimming",description:"Trimming, shaping, and rounding of selected shrubs and bushes, including cleanup of trimmings."},
+{name:"Low Tree Limb Trimming",description:"Ground-accessible pole-pruner trimming of selected low tree limbs. No climbing, tree removal, or hazardous limb work."},
+{name:"Oil / Rust / Paint Removal",description:"Specialty treatment of selected oil, grease, rust, or paint stains on concrete and other approved hard surfaces."},
+{name:"Solar Panel Cleaning",description:"Low-pressure exterior cleaning of accessible solar panels to remove dirt, dust, pollen, bird debris, and surface buildup."}
+];
+function money(v){return "$"+Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}
+function val(id){return document.getElementById(id).value.trim()}
+function esc(v){return String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function renderLibrary(){serviceLibrary.innerHTML=SERVICE_LIBRARY.map((s,i)=>`<button class="service-btn" type="button" onclick="addService(${i})"><strong>${esc(s.name)}</strong><span>${esc(s.description)}</span></button>`).join("")}
+function addService(i){const s=SERVICE_LIBRARY[i];if([...document.querySelectorAll(".service")].some(x=>x.value===s.name))return;const row=document.createElement("div");row.className="line";row.innerHTML=`<input class="service" value="${esc(s.name)}"><input class="description" value="${esc(s.description)}"><input class="amount" type="number" min="0" step=".01" placeholder="Price"><button type="button" onclick="this.parentElement.remove();updateTotal()">×</button>`;row.querySelectorAll("input").forEach(x=>x.addEventListener("input",updateTotal));lines.appendChild(row);updateTotal()}
+function items(){return [...document.querySelectorAll(".line")].map(r=>({service:r.querySelector(".service").value.trim(),description:r.querySelector(".description").value.trim(),amount:Number(r.querySelector(".amount").value||0)})).filter(x=>x.service)}
+function updateTotal(){const data=items(),sum=data.reduce((s,x)=>s+x.amount,0);total.textContent=money(sum);previewBody.innerHTML=data.length?data.map(x=>`<tr><td><strong>${esc(x.service)}</strong></td><td>${esc(x.description)}</td><td class="amt">${money(x.amount)}</td></tr>`).join(""):'<tr><td colspan="3" class="small">No services added yet.</td></tr>'}
+async function testBackend(){backendStatus.textContent="Testing connection...";try{const r=await fetch(API_BASE+"/api/proposals/health");const d=await r.json();if(!r.ok||!d.proposalRoutesReady)throw new Error(d.error||"Not ready");backendStatus.textContent="Connected. Proposal backend is ready.";backendStatus.style.color="#166534";backendStatus.style.background="#eef7eb"}catch(e){backendStatus.textContent="Not connected: "+e.message;backendStatus.style.color="#b91c1c";backendStatus.style.background="#fef2f2"}}
+async function createProposal(){const data=items();result.style.display="none";errorBox.style.display="none";if(!val("customerName")||!val("propertyAddress")||!data.length){alert("Customer name, property address, and at least one service are required.");return}if(data.some(x=>x.amount<=0)){alert("Enter a price greater than $0 for every selected service.");return}
+const payload={customerName:val("customerName"),customerPhone:val("customerPhone"),customerEmail:val("customerEmail"),propertyAddress:val("propertyAddress"),proposalNumber:val("proposalNumber"),preparedDate:val("preparedDate"),notes:val("notes"),lineItems:data};
+try{createBtn.disabled=true;createBtn.textContent="Creating Proposal...";const r=await fetch(API_BASE+"/api/proposals",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});const raw=await r.text();let d={};try{d=raw?JSON.parse(raw):{}}catch(e){throw new Error("Backend returned an unreadable response.")}if(!r.ok)throw new Error(d.error||"Unable to create proposal.");
+const phone=(d.proposal.customer.phone||"").replace(/\D/g,"");const smsText=encodeURIComponent("Hi "+d.proposal.customer.name+", your Exterior Property Maintenance proposal is ready. Review and approve it here: "+d.url);const sms=phone?"sms:"+phone+"?body="+smsText:"sms:?body="+smsText;const email="mailto:"+encodeURIComponent(d.proposal.customer.email||"")+"?subject="+encodeURIComponent("Your EPM Proposal "+d.proposal.proposalNumber)+"&body="+encodeURIComponent("Hi "+d.proposal.customer.name+",\n\nYour Exterior Property Maintenance proposal is ready:\n"+d.url+"\n\nThank you,\nExterior Property Maintenance");
+result.style.display="block";result.innerHTML=`<strong>Proposal created and saved.</strong><p><a href="${d.url}" target="_blank">${d.url}</a></p><div class="actions"><button class="secondary" onclick="navigator.clipboard.writeText('${d.url}')">Copy Link</button><a class="btn secondary" href="${sms}">Text Customer</a><a class="btn secondary" href="${email}">Email Customer</a><a class="btn dark" href="${d.url}" target="_blank">Open Proposal</a></div>`}catch(e){errorBox.style.display="block";errorBox.textContent=e.message}finally{createBtn.disabled=false;createBtn.textContent="Create & Save Proposal"}}
+function resetForm(){customerName.value="";customerPhone.value="";customerEmail.value="";propertyAddress.value="";proposalNumber.value="";lines.innerHTML="";result.style.display="none";errorBox.style.display="none";preparedDate.value=new Date().toISOString().slice(0,10);updateTotal()}
+preparedDate.value=new Date().toISOString().slice(0,10);renderLibrary();updateTotal();testBackend();
+</script></body></html>
